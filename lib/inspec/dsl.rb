@@ -43,11 +43,11 @@ of #{bind_context.profile_name}.
 
 Dependencies available from this context are:
 
-     #{dependencies.list.keys.join("\n    ")}
+    #{dependencies.list.keys.join("\n    ")}
 EOF
     end
 
-    context = load_profile_context(dep_entry.profile, opts[:backend])
+    context = Inspec::ProfileContext.for_profile(dep_entry.profile, opts[:backend])
 
     # if we don't want all the rules, then just make 1 pass to get all rule_IDs
     # that we want to keep from the original
@@ -69,17 +69,5 @@ EOF
         context.rules[id] = nil
       end
     end
-  end
-
-  def self.load_profile_context(profile, backend)
-    ctx = Inspec::ProfileContext.for_profile(profile, backend)
-    profile.libraries.each do |path, content|
-      ctx.load(content.to_s, path, 1)
-      ctx.reload_dsl
-    end
-    profile.tests.each do |path, content|
-      ctx.load(content.to_s, path, 1)
-    end
-    ctx
   end
 end
