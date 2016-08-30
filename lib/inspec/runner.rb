@@ -52,14 +52,6 @@ module Inspec
       @test_collector.tests
     end
 
-    def normalize_map(hm)
-      res = {}
-      hm.each {|k, v|
-        res[k.to_s] = v
-      }
-      res
-    end
-
     def configure_transport
       @backend = Inspec::Backend.create(@conf)
       @test_collector.backend = @backend
