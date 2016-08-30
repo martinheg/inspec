@@ -15,13 +15,14 @@ export class XtermTerminalComponent implements OnInit {
   terminalContainer: any;
   term: any;
   optionElements: any;
-  cols: any;
-  rows: any;
+  cols: string;
+  rows: string;
+  previousCommands: any = [];
 
  ngOnInit() {
     this.terminalContainer = document.getElementById('terminal-container'),
     this.optionElements = {
-      cursorBlink: document.querySelector('#option-cursor-blink')
+      cursorBlink: true
     },
     this.cols = '70',
     this.rows = '70';
@@ -52,17 +53,12 @@ export class XtermTerminalComponent implements OnInit {
     if (this.term._initialized) {
       return;
     }
-
     this.term._initialized = true;
-    this.setPrompt();
-
-    this.term.writeln('WELCOME TO YOUR INSPEC DEMO SHELL FOOL!');
-    this.term.writeln('');
     this.setPrompt();
   }
 
   setPrompt() {
-    this.buffer = ''
+    this.buffer = '';
     this.shellprompt = '$ ';
     this.term.write('\r\n' + this.shellprompt);
   }
@@ -76,20 +72,21 @@ export class XtermTerminalComponent implements OnInit {
     var shell = null
     var printable = (!ev.altKey && !ev.altGraphKey && !ev.ctrlKey && !ev.metaKey)
 
-    // on enter, check buffer and print response
+    // on enter, check buffer, save command to array, and print response
     if (ev.keyCode == 13) {
+      this.previousCommands.push(this.buffer);
       this.term.write('\r\n');
 
       // play with inspec shell
       if (this.buffer == 'inspec shell') {
         shell = 'inspec-shell'
-        this.term.writeln('Welcome to the interactive InSpec Shell');
+        this.term.writeln('Welcome to the InSpec Shell');
         this.term.writeln('To find out how to use it, type: help')
         this.setInspecShellPrompt();
       }
 
-      // exit inspec shell
-      if (this.buffer == 'exit' && shell == 'inspec-shell' ) {
+      // exit inspec shell && shell == 'inspec-shell' )
+      if (this.buffer.match(/^exit\s*/) && shell == 'inspec-shell')  {
         shell = null
         this.setPrompt();
       }
@@ -99,9 +96,9 @@ export class XtermTerminalComponent implements OnInit {
         if (this.buffer == 'os.params') {
           this.term.writeln('print file content for shell');
         }
-
-      } else {
-        // match on various commands or print inspec help
+      }
+      // match on various commands or print inspec help
+      else {
         if (this.buffer.match(/^inspec\s*exec\s*.*/)) {
           this.parseInspecExec(this.buffer);
         }
@@ -114,9 +111,17 @@ export class XtermTerminalComponent implements OnInit {
           this.stepNumber.emit(this.step);
           this.setPrompt();
         }
-        else if (this.buffer.match(/^previous\s*/)) {
+        else if (this.buffer.match(/^prev\s*/)) {
           this.step -= 1;
           this.stepNumber.emit(this.step);
+          this.setPrompt();
+        }
+        else if (this.buffer.match(/^ls\s*/)) {
+          this.term.writeln(this.responsesArray[1]['_body']);
+          this.setPrompt();
+        }
+        else if (this.buffer.match(/^pwd\s*/)) {
+          this.term.writeln(this.responsesArray[2]['_body']);
           this.setPrompt();
         }
         else {
@@ -124,14 +129,30 @@ export class XtermTerminalComponent implements OnInit {
           this.setPrompt();
         }
       }
-
+    }
     // on backspace, pop characters from buffer
-    } else if (ev.keyCode == 8) {
+    else if (ev.keyCode == 8) {
       if (this.term.x > 2) {
-        this.buffer = this.buffer.substr(0, this.buffer.length-1)
+        this.buffer = this.buffer.substr(0, this.buffer.length-1);
         this.term.write('\b \b');
       }
-    } else if (printable) {
+    }
+    // on up arrow, delete anything on line and print previous command
+    else if (ev.keyCode === 38) {
+      let last;
+      if (this.previousCommands.length > 0) {
+        last = this.previousCommands.pop();
+      } else {
+        last = '';
+      }
+      let letters = this.term.x - 2;
+      for (var i = 0; i < letters; i++) {
+        this.term.write('\b \b');
+      }
+      this.term.write(last);
+    }
+    // write each character on prompt line
+    else if (printable) {
       this.term.write(ev.key);
       this.buffer += ev.key;
     }
