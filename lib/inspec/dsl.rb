@@ -18,19 +18,6 @@ module Inspec::DSL
   alias require_rules require_controls
   alias include_rules include_controls
 
-  def self.rule_from_check(m, a, b)
-    if a.is_a?(Array) && !a.empty? &&
-       a[0].respond_to?(:resource_skipped) &&
-       !a[0].resource_skipped.nil?
-      ::Inspec::Rule.__send__(m, *a) do
-        it a[0].resource_skipped
-      end
-    else
-      # execute the method
-      ::Inspec::Rule.__send__(m, *a, &b)
-    end
-  end
-
   def self.load_spec_files_for_profile(bind_context, opts, &block)
     dependencies = opts[:dependencies]
     profile_id = opts[:profile_id]
