@@ -44,7 +44,7 @@ module Inspec
     def profile_execution_context
       @profile_execution_context ||= begin
                                        resources_dsl = to_resources_dsl
-                                       ctx = create_context(resources_dsl, rule_context(resources_dsl))
+                                       ctx = create_context(resources_dsl)
                                        ctx.new(@backend, @conf, @dependencies, @require_loader)
                                      end
     end
@@ -184,7 +184,8 @@ module Inspec
     #
     # @param outer_dsl [OuterDSLClass]
     # @return [ProfileContextClass]
-    def create_context(resources_dsl, rule_class) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+    def create_context(resources_dsl) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+      rule_class = rule_context(resources_dsl)
       profile_context_owner = self
       profile_id = @profile_id
 
