@@ -31,7 +31,6 @@ module Inspec
   class Runner # rubocop:disable Metrics/ClassLength
     extend Forwardable
 
-    def_delegator :@test_collector, :run
     def_delegator :@test_collector, :report
     def_delegator :@test_collector, :reset
 
