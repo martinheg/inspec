@@ -74,11 +74,6 @@ module Inspec
       @subcontexts << context
     end
 
-    def load_tests_from_profile(profile)
-      profile.tests.each do |path, content|
-      end
-    end
-
     def load_libraries(libs)
       lib_prefix = 'libraries' + File::SEPARATOR
       autoloads = []
